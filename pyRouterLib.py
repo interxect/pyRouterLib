@@ -2,11 +2,16 @@ class pyRouterLib:
 	'''
 	Requirments:
 	*** Modules:
-		os, getpass, paramiko
+		os, getpass, paramiko, logging
 	'''
 	
 	def __init__(self, host):
 		self.host = host
+	
+	''' Granular debugging that assists in trouble shooting issues '''
+	def debug(self):
+		import logging
+		logging.basicConfig(level=logging.DEBUG)
 	
 	''' Define where to get user credentials '''
 	def getCreds(self):
@@ -41,10 +46,18 @@ class pyRouterLib:
 		
 	def useSSH(self, host):
 		import paramiko
+		import time
 		
 		remoteConnectionSetup = paramiko.SSHClient()
 		remoteConnectionSetup.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-		remoteConnectionSetup.connect(host, username=self.username, password=self.password)
+		remoteConnectionSetup.connect(host, username=self.username, password=self.password, allow_agent=False, look_for_keys=False)
 		print "SSH connection established to %s" % host
 		remoteConnection = remoteConnectionSetup.invoke_shell()
 		print "Interactive SSH session established"
+		output = remoteConnection.recv(1000)
+		print output
+		remoteConnection.send("\n")
+		remoteConnection.send("show ver\n")
+		output = remoteConnection.recv(5000)
+		time.sleep(2)
+		print output
