@@ -15,17 +15,18 @@ def arguments():
 	parser = argparse.ArgumentParser(description='A Python implementation of MultiChange, which allows you to make mass changes to routers and switches via SSH.')
 	parser.add_argument('-d', '--hosts', help='Specify a host file', required=True)
 	parser.add_argument('-c', '--commands', help='Specify a commands file', required=True)
-	parser.add_argument('-v', '--verbose', help='Enables a verbose debugging mode')
+	parser.add_argument('-v', '--verbose', nargs='?', default=False, help='Enables a verbose debugging mode')
 
 	args = vars(parser.parse_args())
+
+	print args['verbose']
 
 	if args['hosts']:
 		hosts_file = args['hosts']
 	if args['commands']:
 		cmd_file = args['commands']
-	if args['verbose']:
-		args['verbose'] = True
-		verbose = args['verbose']
+	if args['verbose'] == None:
+		verbose = True
 	
 	return hosts_file, cmd_file, verbose
 
@@ -44,15 +45,16 @@ if os.path.isfile(hosts_file):
 		password = creds[1]
 		enable = creds[2]
 		
+		''' Enable verbose debugging '''
 		if verbose:
-			pyRouterLib.debug()
+			rlib.debug()
 		
 		remoteConnectionSetup = paramiko.SSHClient()
 		remoteConnectionSetup.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 		remoteConnectionSetup.connect(host, username=username, password=password, allow_agent=False, look_for_keys=False)
-		print "SSH connection established to %s" % host
+		print "*** SSH connection established to %s" % host
 		remoteConnection = remoteConnectionSetup.invoke_shell()
-		print "Interactive SSH session established"
+		print "*** Interactive SSH session established"
 		cmds = open(cmd_file, 'r')
 		for command in cmds:
 			remoteConnection.send(command)
