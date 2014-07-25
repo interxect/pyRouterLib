@@ -3,12 +3,13 @@
 from pyRouterLib import *
 import os, argparse, paramiko, time
 
-''' Define hosts file and command file variables '''
+''' Define hosts file, command file, verbose variables '''
 hosts_file = ''
 cmd_file = ''
 verbose = False
 
 def arguments():
+	''' Function to define the script command line arguments '''
 	global hosts_file, cmd_file, verbose
 	
 	parser = argparse.ArgumentParser(description='A Python implementation of MultiChange, which allows you to make mass changes to routers and switches via SSH.')
@@ -42,6 +43,9 @@ if os.path.isfile(hosts_file):
 		username = creds[0]
 		password = creds[1]
 		enable = creds[2]
+		
+		if verbose:
+			pyRouterLib.debug()
 		
 		remoteConnectionSetup = paramiko.SSHClient()
 		remoteConnectionSetup.set_missing_host_key_policy(paramiko.AutoAddPolicy())
