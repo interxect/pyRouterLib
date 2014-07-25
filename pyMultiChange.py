@@ -19,8 +19,6 @@ def arguments():
 
 	args = vars(parser.parse_args())
 
-	print args['verbose']
-
 	if args['hosts']:
 		hosts_file = args['hosts']
 	if args['commands']:
