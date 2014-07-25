@@ -58,8 +58,8 @@ if os.path.isfile(hosts_file):
 			remoteConnection.send(command)
 			print "*** Executing Command: %s" % command
 			if verbose:
-				output = remoteConnection.recv(1000)
 				time.sleep(2)
+				output = remoteConnection.recv(10000)
 				print output
 		cmds.close()
 		print "*** Closing Connection to %s" % host
