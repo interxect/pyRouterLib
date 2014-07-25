@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 class pyRouterLib:
 	'''
 	Requirments:
@@ -14,7 +16,7 @@ class pyRouterLib:
 		logging.basicConfig(level=logging.DEBUG)
 	
 	''' Define where to get user credentials '''
-	def getCreds(self):
+	def get_creds(self):
 		from os.path import expanduser
 		import os.path
 		homeDir = expanduser("~")
@@ -33,31 +35,22 @@ class pyRouterLib:
 			credsFileLocation.close()
 		else:
 			import getpass
-			print "You have not created a credentials file."
+			print "You have not created a credentials file. Lets create one..."
 			self.username = raw_input("Username: ")
 			self.password = getpass.getpass("User Password: ")
 			self.enable = getpass.getpass("Enable Password: ")
-		
+			
+			authFile = open(credsFile, 'w+')
+			authFile.write(self.username + "\n")
+			authFile.write(self.password + "\n")
+			authFile.write(self.enable + "\n")
+			authFile.close()
+				
+			print "Your credentials file has been created and is located at: "
+			print credsFile + "\n"
+
 		username = self.username
 		password = self.password
 		enable = self.enable
 		
 		return username, password, enable
-		
-	def useSSH(self, host):
-		import paramiko
-		import time
-		
-		remoteConnectionSetup = paramiko.SSHClient()
-		remoteConnectionSetup.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-		remoteConnectionSetup.connect(host, username=self.username, password=self.password, allow_agent=False, look_for_keys=False)
-		print "SSH connection established to %s" % host
-		remoteConnection = remoteConnectionSetup.invoke_shell()
-		print "Interactive SSH session established"
-		output = remoteConnection.recv(1000)
-		print output
-		remoteConnection.send("\n")
-		remoteConnection.send("show ver\n")
-		output = remoteConnection.recv(5000)
-		time.sleep(2)
-		print output
