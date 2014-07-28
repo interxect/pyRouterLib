@@ -79,6 +79,7 @@ if os.path.isfile(hosts_file):
 				if verbose:
 					print "*** Entering enable mode was unsuccessful"
 		else:
+			remoteConnection.send("terminal length 0\n")
 			if verbose:
 				print "*** User: %s already has enable privileges" % username
 		
