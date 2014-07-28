@@ -46,16 +46,47 @@ if os.path.isfile(hosts_file):
 		''' Enable verbose debugging '''
 		if verbose:
 			rlib.debug()
-		
+			
 		remoteConnectionSetup = paramiko.SSHClient()
 		remoteConnectionSetup.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 		remoteConnectionSetup.connect(host, username=username, password=password, allow_agent=False, look_for_keys=False)
 		print "*** SSH connection established to %s" % host
 		remoteConnection = remoteConnectionSetup.invoke_shell()
-		print "*** Interactive SSH session established"
+		if verbose:
+			print "*** Interactive SSH session established"
+		
+		time.sleep(1)
+		is_enable = remoteConnection.recv(1000)
+		if "#" not in is_enable:
+			remoteConnection.send("enable\n")
+			time.sleep(1)
+			if_enable = remoteConnection.recv(1000)
+			if "Password:" in if_enable:
+				if verbose:
+					print "*** Sending enable password"
+				remoteConnection.send(enable)
+				remoteConnection.send("\n")
+		
+			time.sleep(2)
+			is_enable = remoteConnection.recv(1000)
+		
+			if "#" in is_enable:
+				if verbose:
+					print "*** Successfully entered enable mode"
+			
+				remoteConnection.send("terminal length 0\n")
+			else:
+				if verbose:
+					print "*** Entering enable mode was unsuccessful"
+		else:
+			if verbose:
+				print "*** User: %s already has enable privileges" % username
+		
 		cmds = open(cmd_file, 'r')
 		for command in cmds:
+			command = command.strip()
 			remoteConnection.send(command)
+			remoteConnection.send("\n")
 			print "*** Executing Command: %s" % command
 			if verbose:
 				time.sleep(2)

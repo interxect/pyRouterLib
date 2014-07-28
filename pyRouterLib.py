@@ -6,6 +6,7 @@ class pyRouterLib:
 	*** Modules:
 		os, getpass, paramiko, logging
 	'''
+	remoteConnection = ''
 	
 	def __init__(self, host):
 		self.host = host
@@ -27,11 +28,11 @@ class pyRouterLib:
 			print "Using existing credentials file."
 			credsFileLocation = open(credsFile)
 			self.username = credsFileLocation.readline()
-			self.username = self.username.strip('\n')
+			self.username = self.username.strip()
 			self.password = credsFileLocation.readline()
-			self.password = self.password.strip('\n')
+			self.password = self.password.strip()
 			self.enable = credsFileLocation.readline()
-			self.enable = self.enable.strip('\n')
+			self.enable = self.enable.strip()
 			credsFileLocation.close()
 		else:
 			import getpass
@@ -54,3 +55,21 @@ class pyRouterLib:
 		enable = self.enable
 		
 		return username, password, enable
+	
+	''' Do not use this function, yet. It is not working '''
+	def use_ssh(self, host, username, password, command):
+		import paramiko
+		remoteConnectionSetup = paramiko.SSHClient()
+		remoteConnectionSetup.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+		remoteConnectionSetup.connect(host, username=username, password=password, allow_agent=False, look_for_keys=False)
+		print "*** SSH connection established to %s" % host
+		remoteConnection = remoteConnectionSetup.invoke_shell()
+		print "*** Interactive SSH session established"	
+		if command:
+			remoteConnection.send(command)
+			print "*** Executing Command: %s" % command
+			if verbose:
+				time.sleep(2)
+				output = remoteConnection.recv(10000)
+				print output
+		
