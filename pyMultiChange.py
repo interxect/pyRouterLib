@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
 from pyRouterLib import *
-import os, argparse, paramiko, time
+import os, argparse, paramiko
 
 ''' Define hosts file, command file, verbose variables '''
 hosts_file = ''
 cmd_file = ''
-verbose = False
+verbose = ''
+remoteConnection = ''
 
 def arguments():
 	''' Function to define the script command line arguments '''
@@ -37,7 +38,7 @@ if os.path.isfile(hosts_file):
 		host = host.strip("\n")
 		
 		''' use pyRouterLib to grab the user authentication credentials '''
-		rlib = pyRouterLib(host)
+		rlib = pyRouterLib(host, verbose)
 		creds = rlib.get_creds()
 		username = creds[0]
 		password = creds[1]
@@ -46,7 +47,7 @@ if os.path.isfile(hosts_file):
 		''' Enable verbose debugging '''
 		if verbose:
 			rlib.debug()
-			
+		
 		remoteConnectionSetup = paramiko.SSHClient()
 		remoteConnectionSetup.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 		remoteConnectionSetup.connect(host, username=username, password=password, allow_agent=False, look_for_keys=False)
@@ -55,44 +56,11 @@ if os.path.isfile(hosts_file):
 		if verbose:
 			print "*** Interactive SSH session established"
 		
-		time.sleep(1)
-		is_enable = remoteConnection.recv(1000)
-		if "#" not in is_enable:
-			remoteConnection.send("enable\n")
-			time.sleep(1)
-			if_enable = remoteConnection.recv(1000)
-			if "Password:" in if_enable:
-				if verbose:
-					print "*** Sending enable password"
-				remoteConnection.send(enable)
-				remoteConnection.send("\n")
-		
-			time.sleep(2)
-			is_enable = remoteConnection.recv(1000)
-		
-			if "#" in is_enable:
-				if verbose:
-					print "*** Successfully entered enable mode"
-			
-				remoteConnection.send("terminal length 0\n")
-			else:
-				if verbose:
-					print "*** Entering enable mode was unsuccessful"
-		else:
-			remoteConnection.send("terminal length 0\n")
-			if verbose:
-				print "*** User: %s already has enable privileges" % username
+		rlib.ssh_enable(remoteConnection, username, enable, verbose)
 		
 		cmds = open(cmd_file, 'r')
 		for command in cmds:
-			command = command.strip()
-			remoteConnection.send(command)
-			remoteConnection.send("\n")
-			print "*** Executing Command: %s" % command
-			if verbose:
-				time.sleep(2)
-				output = remoteConnection.recv(10000)
-				print output
+			rlib.ssh_send(remoteConnection, command, verbose)
 		cmds.close()
 		print "*** Closing Connection to %s" % host
 	hosts.close()

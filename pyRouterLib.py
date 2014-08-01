@@ -6,15 +6,18 @@ class pyRouterLib:
 	*** Modules:
 		os, getpass, paramiko, logging
 	'''
-	remoteConnection = ''
 	
-	def __init__(self, host):
+	def __init__(self, host, verbose):
 		self.host = host
+		self.verbose = verbose
 	
 	''' Granular debugging that assists in trouble shooting issues '''
 	def debug(self):
 		import logging
 		logging.basicConfig(level=logging.DEBUG)
+		verbose = True
+		
+		return verbose
 	
 	''' Define where to get user credentials '''
 	def get_creds(self):
@@ -56,20 +59,73 @@ class pyRouterLib:
 		
 		return username, password, enable
 	
-	''' Do not use this function, yet. It is not working '''
-	def use_ssh(self, host, username, password, command):
+	''' Do not use the below SSH functions, yet. It is not working '''
+	
+	''' Establish a connection via SSH '''
+	def use_ssh(self, host, username, password, verbose):
 		import paramiko
+		
+		global remoteConnection
+		
 		remoteConnectionSetup = paramiko.SSHClient()
 		remoteConnectionSetup.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 		remoteConnectionSetup.connect(host, username=username, password=password, allow_agent=False, look_for_keys=False)
+		
 		print "*** SSH connection established to %s" % host
+		
 		remoteConnection = remoteConnectionSetup.invoke_shell()
-		print "*** Interactive SSH session established"	
-		if command:
-			remoteConnection.send(command)
-			print "*** Executing Command: %s" % command
+		
+		if verbose:
+			print "*** Interactive SSH session established"
+		
+		return remoteConnection
+		
+	''' Once an SSH connection has been established. Enter enable mode '''
+	def ssh_enable(self, remoteConnection, username, enable, verbose):
+		import time
+		
+		time.sleep(1)
+		
+		is_enable = remoteConnection.recv(1000)
+		
+		if "#" not in is_enable:
+			remoteConnection.send("enable\n")
+			time.sleep(1)
+			if_enable = remoteConnection.recv(1000)
+		
+			if "Password:" in if_enable:
+				if verbose:
+					print "*** Sending enable password"
+				remoteConnection.send(enable)
+				remoteConnection.send("\n")
+			time.sleep(2)
+			is_enable = remoteConnection.recv(1000)
+		
+			if "#" in is_enable:
+				if verbose:
+					print "*** Successfully entered enable mode"
+				remoteConnection.send("terminal length 0\n")
+			else:
+				if verbose:
+					print "*** Entering enable mode was unsuccessful"
+		else:
+			remoteConnection.send("terminal length 0\n")
 			if verbose:
-				time.sleep(2)
-				output = remoteConnection.recv(10000)
-				print output
+				print "*** User: %s already has enable privileges" % username
+
+	''' Send commands to the remote SSH host '''
+	def ssh_send(self, remoteConnection, command, verbose):
+		import time
+		
+		command = command.strip()
+		
+		remoteConnection.send(command)
+		remoteConnection.send("\n")
+		
+		print "*** Executing Command: %s" % command
+		
+		if verbose:
+			time.sleep(2)
+			output = remoteConnection.recv(10000)
+			print output
 		
