@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
 from pyRouterLib import *
-import os, argparse, paramiko, time
+import os, argparse, paramiko
 
 ''' Define hosts file, command file, verbose variables '''
 hosts_file = ''
 cmd_file = ''
-verbose = False
+verbose = ''
+remoteConnection = ''
 
 def arguments():
 	''' Function to define the script command line arguments '''
@@ -37,7 +38,7 @@ if os.path.isfile(hosts_file):
 		host = host.strip("\n")
 		
 		''' use pyRouterLib to grab the user authentication credentials '''
-		rlib = pyRouterLib(host)
+		rlib = pyRouterLib(host, verbose)
 		creds = rlib.get_creds()
 		username = creds[0]
 		password = creds[1]
@@ -52,15 +53,14 @@ if os.path.isfile(hosts_file):
 		remoteConnectionSetup.connect(host, username=username, password=password, allow_agent=False, look_for_keys=False)
 		print "*** SSH connection established to %s" % host
 		remoteConnection = remoteConnectionSetup.invoke_shell()
-		print "*** Interactive SSH session established"
+		if verbose:
+			print "*** Interactive SSH session established"
+		
+		rlib.ssh_enable(remoteConnection, username, enable, verbose)
+		
 		cmds = open(cmd_file, 'r')
 		for command in cmds:
-			remoteConnection.send(command)
-			print "*** Executing Command: %s" % command
-			if verbose:
-				time.sleep(2)
-				output = remoteConnection.recv(10000)
-				print output
+			rlib.ssh_send(remoteConnection, command, verbose)
 		cmds.close()
 		print "*** Closing Connection to %s" % host
 	hosts.close()
