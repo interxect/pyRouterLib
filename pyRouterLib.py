@@ -2,10 +2,29 @@
 
 class RouterLib(object):
 	
-	def __init__(self, verbose):
-		self.verbose = verbose
+	""" CREDENTIALS Module """
+	from os.path import expanduser
+	import os.path
+	import getpass
+	creds_file = expanduser('~/.tacacslogin')
+	if os.path.isfile(creds_file):
+		f = open(creds_file, 'r')
+		username = f.readline().strip('\n')
+		password = f.readline().strip('\n')
+		enable = f.readline().strip('\n')
+		f.close()
+	else:
+		print "Creating %s" % creds_file
+		username = raw_input("Username: ")
+		password = getpass.getpass("User Password: ")
+		enable = getpass.getpass("Enable Password: ")
+		
+		f = open(creds_file, 'w')
+		f.write(username + "\n" + password + "\n" + enable + "\n")
+		f.close()
 	
-		return self.verbose
+	def __init__(self):
+		pass
 	
 	""" DEBUG Module """
 	def enable_debug(self):
@@ -14,41 +33,38 @@ class RouterLib(object):
 		verbose = True
 		
 		return verbose
-	
-	""" CREDENTIALS Module """
-	def get_creds(self):
-		from os.path import expanduser
-		import os.path
-		import getpass
-		creds_file = expanduser('~/.tacacslogin')
-		if os.path.isfile(creds_file):
-			f = open(creds_file, 'r')
-			self.username = f.readline().strip('\n')
-			self.password = f.readline().strip('\n')
-			self.enable = f.readline().strip('\n')
-			f.close()
-		else:
-			print "Creating %s" % creds_file
-			self.username = raw_input("Username: ")
-			self.password = getpass.getpass("User Password: ")
-			self.enable = getpass.getpass("Enable Password: ")
-			
-			f = open(creds_file, 'w')
-			f.write(self.username + "\n" + self.password + "\n" + self.enable + "\n")
-			f.close()
-		
-		return self.username, self.password, self.enable
 
 	""" TELNET Module """
 	def use_telnet(self, host, username, password):
 		import telnetlib
+		import sys
 		
 		self.host = host
 		self.username = username
 		self.password = password
 		self.access = telnetlib.Telnet(self.host)
-		
-		return self.access, self.host
+		login_prompt = self.access.read_until(": ", 1)
+		if 'login' in login_prompt:
+			self.is_nexus = True
+			self.access.write(username + "\n")
+		elif 'Username' in login_prompt:
+			self.is_nexus = False
+			self.access.write(username + "\n")
+		password_prompt = self.access.read_until('Password:', 1)
+		self.access.write(password + "\n")
+		if self.is_nexus is True:
+			self.access.read_until("#")
+			self.access.write("terminal length 0\n")
+		else:
+			self.access.read_until(">")
+			self.access.write("enable\n")
+			self.access.read_until("Password: ")
+			self.access.write(RouterLib.enable + "\n")
+			self.access.read_until("#")
+			self.access.write("terminal length 0\n")
+			self.access.read_until("#")
+
+		return self.access, self.host, self.is_nexus
 	
 	""" SSH Module """
 	def use_ssh(self, host, username, password):
