@@ -76,8 +76,9 @@ class RouterLib(object):
 		self.access = paramiko.SSHClient()
 		self.access.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 		self.access.connect(host, username=self.username, password=self.password, allow_agent=False, look_for_keys=False)
+		self.ssh_shell = self.access.invoke_shell()
 		
-		return self.host, self.username, self.password, self.access
+		return self.host, self.username, self.password, self.access, self.ssh_shell
 	
 	""" SNMP Module """	
 	def use_snmp(self):
