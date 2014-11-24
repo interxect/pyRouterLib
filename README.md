@@ -71,7 +71,7 @@ ROM: Bootstrap program is C3550 boot loader
 
 
 
-core1a.sat uptime is 9 weeks, 2 days, 21 hours, 10 minutes
+testdevice uptime is 9 weeks, 2 days, 21 hours, 10 minutes
 
 System returned to ROM by power-on
 
@@ -233,7 +233,7 @@ ROM: Bootstrap program is C3550 boot loader
 
 
 
-core1a.sat uptime is 9 weeks, 2 days, 21 hours, 10 minutes
+testdevice uptime is 9 weeks, 2 days, 21 hours, 10 minutes
 
 
 System returned to ROM by power-on
