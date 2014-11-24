@@ -177,7 +177,11 @@ testdevice#exit
 
 In the output of 'print telnet_test', you will see a list item that shows 'False'.
 
+```
+
 ('172.16.0.1', 'testuser', 'testpassword', False, <telnetlib.Telnet instance at 0x109f83f38>)
+
+```
 
 This item is the output of the 'is_nexus' variable, which will detect whether the device is an IOS device or a NX-OS device and adjust the expect output accordingly. You could also write scripts that modify both IOS and NX-OS devices in the same run, but having a command syntax for NX-OS and another for IOS. The immediate type of script that comes to mind is modifying access-lists - as the command syntax is different between IOS and NX-OS.
 
