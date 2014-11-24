@@ -380,4 +380,6 @@ Configuration register is 0x10F
 
 ```
 
+## SNMP Module
+
 Currently, the SNMP module is a work in progress. I'll update the documentation when I have completed it.
