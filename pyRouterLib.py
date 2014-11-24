@@ -9,9 +9,9 @@ class RouterLib(object):
 	creds_file = expanduser('~/.tacacslogin')
 	if os.path.isfile(creds_file):
 		f = open(creds_file, 'r')
-		username = f.readline().strip('\n')
-		password = f.readline().strip('\n')
-		enable = f.readline().strip('\n')
+		username = f.readline().strip('')
+		password = f.readline().strip('')
+		enable = f.readline().strip('')
 		f.close()
 	else:
 		print "Creating %s" % creds_file
@@ -35,6 +35,10 @@ class RouterLib(object):
 		return verbose
 
 	""" TELNET Module """
+	"""
+	telnetlib documentation:
+	https://docs.python.org/2/library/telnetlib.html
+	"""
 	def use_telnet(self, host, username, password):
 		import telnetlib
 		import sys
@@ -64,9 +68,13 @@ class RouterLib(object):
 			self.access.write("terminal length 0\n")
 			self.access.read_until("#")
 
-		return self.access, self.host, self.is_nexus
+		return self.host, self.username, self.password, self.is_nexus, self.access
 	
 	""" SSH Module """
+	"""
+	Paramiko Documentation:
+	http://docs.paramiko.org/en/1.15/api/client.html
+	"""
 	def use_ssh(self, host, username, password):
 		import paramiko
 		
@@ -76,9 +84,8 @@ class RouterLib(object):
 		self.access = paramiko.SSHClient()
 		self.access.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 		self.access.connect(host, username=self.username, password=self.password, allow_agent=False, look_for_keys=False)
-		self.ssh_shell = self.access.invoke_shell()
 		
-		return self.host, self.username, self.password, self.access, self.ssh_shell
+		return self.host, self.username, self.password, self.access
 	
 	""" SNMP Module """	
 	def use_snmp(self):
