@@ -9,9 +9,9 @@ class RouterLib(object):
 	creds_file = expanduser('~/.tacacslogin')
 	if os.path.isfile(creds_file):
 		f = open(creds_file, 'r')
-		username = f.readline().strip('')
-		password = f.readline().strip('')
-		enable = f.readline().strip('')
+		username = f.readline().strip()
+		password = f.readline().strip()
+		enable = f.readline().strip()
 		f.close()
 	else:
 		print "Creating %s" % creds_file
