@@ -27,6 +27,7 @@ for i in stdout:
 	print i
 ssh_cmd.close()
 
+#snmp_test = access_method.use_snmp(switch, RouterLib.snmp_read_only, 'sysDescr')
 snmp_test = access_method.use_snmp(switch, RouterLib.snmp_read_only, '.1.3.6.1.2.1.1.1.0')
 
 print "** SNMP Method: "

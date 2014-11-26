@@ -167,6 +167,7 @@ class RouterLib(object):
 		a_device = (host, community_string, snmp_port)
 		snmp_data = snmp_get_oid(a_device, mib_oid, display_errors=False)
 		
+		#return snmp_get_oid(a_device, mib_oid, display_errors=False)
 		return snmp_extract(snmp_data)
 		
 		
